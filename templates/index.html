@@ -45,77 +45,77 @@
             </form>
         </div>
 
-        <table class="table table-striped table-bordered">
-            <thead class="table-dark">
-                <tr>
-                    <th>№</th>
-                    <th>ФИО</th>
-                    <th>Дата рождения</th>
-                    <th>Должность</th>
-                    <th>По приказу № 721</th>
-                    <th>ВЛК срок</th>
-                    <th>КМО срок</th>
-                    <th>УМО срок</th>
-                    <th>КМО2 срок</th>
-                    <th>Дней до осмотра</th>
-                    <th>Состояние</th>
-                    <th>Примечание</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in employees_with_expiry %}
-                {% set employee = item.employee %}
-                {% set has_warning = item.min_days_left is not none and 0 <= item.min_days_left <= 30 %}
-                {% set has_expired = item.min_days_left is not none and item.min_days_left < 0 %}
-                <tr class="{% if has_expired %}table-danger{% elif has_warning %}table-warning{% endif %}">
-                    <td data-label="№">{{ loop.index + (page - 1) * per_page }}</td>
-                    <td data-label="ФИО">{{ employee.fio }}</td>
-                    <td data-label="Дата рождения">{{ employee.birth_date.strftime('%Y-%m-%d') if employee.birth_date else '' }}</td>
-                    <td data-label="Должность">{{ employee.position }}</td>
-                    <td data-label="По приказу № 721">{{ employee.order_no }}</td>
-                    <!-- Отображаем последние реальные даты осмотров из базы -->
-                    <td data-label="ВЛК срок">
-                        {% set vlk_exam = employee.examinations | selectattr('exam_type', 'equalto', 'ВЛК') | list | last %}
-                        {{ vlk_exam.exam_date.strftime('%Y-%m-%d') if vlk_exam else '' }}
-                    </td>
-                    <td data-label="КМО срок">
-                        {% set kmo_exam = employee.examinations | selectattr('exam_type', 'equalto', 'КМО') | list | last %}
-                        {{ kmo_exam.exam_date.strftime('%Y-%m-%d') if kmo_exam else '' }}
-                    </td>
-                    <td data-label="УМО срок">
-                        {% set umo_exam = employee.examinations | selectattr('exam_type', 'equalto', 'УМО') | list | last %}
-                        {{ umo_exam.exam_date.strftime('%Y-%m-%d') if umo_exam else '' }}
-                    </td>
-                    <td data-label="КМО2 срок">
-                        {% set kmo2_exam = employee.examinations | selectattr('exam_type', 'equalto', 'КМО2') | list | last %}
-                        {{ kmo2_exam.exam_date.strftime('%Y-%m-%d') if kmo2_exam else '' }}
-                    </td>
-                    <td data-label="Дней до осмотра">
-                        {% if item.min_days_left is not none %}
-                            {{ item.nearest_exam }}:
-                            {% if item.min_days_left < 0 %}
-                                Истёк срок ({{-item.min_days_left}} дней)
-                            {% elif item.min_days_left <= 30 %}
-                                Менее месяца ({{ item.min_days_left }} дней)
-                            {% else %}
-                                {{ item.min_days_left }} дней
-                            {% endif %}
-                        {% else %}
-                            Нет данных
-                        {% endif %}
-                    </td>
-                    <td data-label="Состояние">{{ employee.preflight_condition }}</td>
-                    <td data-label="Примечание">{{ employee.note or '' }}</td>
-                    <td data-label="Действия">
-                        <a href="{{ url_for('history', id=employee.id) }}" class="btn btn-sm btn-info">История</a>
-                        <a href="{{ url_for('edit', id=employee.id) }}" class="btn btn-sm btn-warning">Редактировать</a>
-                        <a href="{{ url_for('delete', id=employee.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Вы уверены?')">Удалить</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>№</th>
+            <th>ФИО</th>
+            <th>Дата рождения</th>
+            <th>Должность</th>
+            <th>По приказу № 721</th>
+            <th>ВЛК срок</th>
+            <th>КМО срок</th>
+            <th>УМО срок</th>
+            <th>КМО2 срок</th>
+            <th>Дней до осмотра</th>
+            <th>Состояние</th>
+            <th>Примечание</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in employees_with_expiry %}
+        {% set employee = item.employee %}
+        {% set has_warning = item.min_days_left is not none and 0 <= item.min_days_left <= 30 %}
+        {% set has_expired = item.min_days_left is not none and item.min_days_left < 0 %}
+        <tr class="{% if has_expired %}table-danger{% elif has_warning %}table-warning{% endif %}">
+            <td data-label="№">{{ loop.index + (page - 1) * per_page }}</td>
+            <td data-label="ФИО">{{ employee.fio }}</td>
+            <td data-label="Дата рождения">{{ employee.birth_date.strftime('%Y-%m-%d') if employee.birth_date else '' }}</td>
+            <td data-label="Должность">{{ employee.position }}</td>
+            <td data-label="По приказу № 721">{{ employee.order_no }}</td>
+            <!-- Отображаем последние реальные даты осмотров из базы -->
+            <td data-label="ВЛК срок">
+                {% set vlk_exam = employee.examinations | selectattr('exam_type', 'equalto', 'ВЛК') | list | last %}
+                {{ vlk_exam.exam_date.strftime('%Y-%m-%d') if vlk_exam else '' }}
+            </td>
+            <td data-label="КМО срок">
+                {% set kmo_exam = employee.examinations | selectattr('exam_type', 'equalto', 'КМО') | list | last %}
+                {{ kmo_exam.exam_date.strftime('%Y-%m-%d') if kmo_exam else '' }}
+            </td>
+            <td data-label="УМО срок">
+                {% set umo_exam = employee.examinations | selectattr('exam_type', 'equalto', 'УМО') | list | last %}
+                {{ umo_exam.exam_date.strftime('%Y-%m-%d') if umo_exam else '' }}
+            </td>
+            <td data-label="КМО2 срок">
+                {% set kmo2_exam = employee.examinations | selectattr('exam_type', 'equalto', 'КМО2') | list | last %}
+                {{ kmo2_exam.exam_date.strftime('%Y-%m-%d') if kmo2_exam else '' }}
+            </td>
+            <td data-label="Дней до осмотра">
+                {% if item.min_days_left is not none %}
+                    {{ item.nearest_exam }}:
+                    {% if item.min_days_left < 0 %}
+                        Истёк срок ({{-item.min_days_left}} дней)
+                    {% elif item.min_days_left <= 30 %}
+                        Менее месяца ({{ item.min_days_left }} дней)
+                    {% else %}
+                        {{ item.min_days_left }} дней
+                    {% endif %}
+                {% else %}
+                    Нет данных
+                {% endif %}
+            </td>
+            <td data-label="Состояние">{{ employee.preflight_condition }}</td>
+            <td data-label="Примечание">{{ employee.note or '' }}</td>
+            <td data-label="Действия">
+                <a href="{{ url_for('history', id=employee.id) }}" class="btn btn-sm btn-info">История</a>
+                <a href="{{ url_for('edit', id=employee.id) }}" class="btn btn-sm btn-warning">Редактировать</a>
+                <a href="{{ url_for('delete', id=employee.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Вы уверены?')">Удалить</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
         <div class="d-flex justify-content-center mt-3">
             <nav>

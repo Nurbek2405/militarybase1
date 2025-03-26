@@ -1,8 +1,9 @@
 import sqlite3
 import os
 
-# Путь к базе данных в папке instance
-db_path = os.path.join('instance', 'medical_db.sqlite')
+# Путь к базе данных в папке instance относительно корня проекта
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+db_path = os.path.join(base_dir, 'instance', 'medical_db.sqlite')
 
 # Подключаемся к базе данных
 conn = sqlite3.connect(db_path)

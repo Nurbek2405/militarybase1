@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 def process_employee_form(form):
-    from app import PREFLIGHT_CONDITIONS, EXAM_TYPES  # Импортируем внутри функции
+    from app.main import PREFLIGHT_CONDITIONS, EXAM_TYPES
     preflight = form['preflight_condition'] if form['preflight_condition'] in PREFLIGHT_CONDITIONS else 'Допущен'
     employee_data = {
         'fio': form['fio'],
@@ -28,7 +28,7 @@ def process_employee_form(form):
     return employee_data, examinations
 
 def calculate_expiry(employee):
-    from app import EXAM_TYPES  # Импортируем внутри функции
+    from app.main import EXAM_TYPES
     latest_exam_dates = {exam_type: None for exam_type in EXAM_TYPES}
     expiry_dates = {exam_type: None for exam_type in EXAM_TYPES}
     days_left = {exam_type: float('inf') for exam_type in EXAM_TYPES}
@@ -44,16 +44,17 @@ def calculate_expiry(employee):
     current_date = datetime.now().date()
     vlk_date = latest_exam_dates['ВЛК']
 
-    # Рассчитываем сроки на основе последнего ВЛК или индивидуально, если ВЛК нет
+    # Базовые сроки от ВЛК, если ВЛК есть
     if vlk_date:
         expiry_dates['ВЛК'] = vlk_date + timedelta(days=365)  # 365 дней от ВЛК
         expiry_dates['КМО'] = vlk_date + timedelta(days=90)   # 90 дней от ВЛК
         expiry_dates['УМО'] = vlk_date + timedelta(days=180)  # 180 дней от ВЛК
         expiry_dates['КМО2'] = vlk_date + timedelta(days=270) # 270 дней от ВЛК
-    else:
-        for exam_type in EXAM_TYPES:
-            if latest_exam_dates[exam_type]:
-                expiry_dates[exam_type] = latest_exam_dates[exam_type] + timedelta(days=365)
+
+    # Переопределяем сроки, если есть более поздние даты осмотров
+    for exam_type in EXAM_TYPES:
+        if latest_exam_dates[exam_type] and (not vlk_date or latest_exam_dates[exam_type] > vlk_date):
+            expiry_dates[exam_type] = latest_exam_dates[exam_type] + timedelta(days=365)  # 365 дней от последнего осмотра
 
     # Рассчитываем дни до окончания для каждого типа осмотра
     for exam_type in EXAM_TYPES:
@@ -82,3 +83,13 @@ def calculate_expiry(employee):
         'min_days_left': min_days_left if min_days_left != float('inf') else None,
         'nearest_exam': nearest_exam
     }
+
+def recalculate_all_employees(db_session):
+    """Пересчитывает сроки для всех сотрудников в базе."""
+    from app.main import Employee
+    employees = Employee.query.all()
+    for emp in employees:
+        db_session.refresh(emp)  # Синхронизируем объект с базой
+        expiry_data = calculate_expiry(emp)
+        emp.preflight_condition = expiry_data['employee'].preflight_condition
+    db_session.commit()

@@ -6,8 +6,8 @@ import os
 from datetime import datetime
 
 # Путь к папке с вашими файлами
-folder_path = "C:/Users/Nurba/PycharmProjects/militarybase2"    # на работе папка
-#folder_path =  "C:/Users/User/PycharmProjects/militarybase2"    # домашняя папка
+folder_path = "C:/Users/Nurba/PycharmProjects/militarybase2"  # на работе папка
+# folder_path = "C:/Users/User/PycharmProjects/militarybase2"  # домашняя папка
 
 # Получаем текущую дату в формате дд.мм
 current_date = datetime.now().strftime("%d.%m")
