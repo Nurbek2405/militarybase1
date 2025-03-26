@@ -1,2 +1,3 @@
+version: "3"
 agent:
-	authtoken: 2uQzRigttgjHqKzLtfrRlLn9yAs_6Y2yEAK2h7kESLXANCasR
+    authtoken: 2uQzRigttgjHqKzLtfrRlLn9yAs_6Y2yEAK2h7kESLXANCasR

@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, send_file
-from models import db, Employee, Examination, process_employee_form, calculate_expiry, PREFLIGHT_CONDITIONS
+from models import process_employee_form, calculate_expiry
 from datetime import datetime, timedelta
 from io import BytesIO
 from openpyxl import Workbook, load_workbook
@@ -8,6 +8,8 @@ import xlwt
 import xlrd
 
 def register_routes(app):
+    from app import db, Employee, Examination, PREFLIGHT_CONDITIONS
+
     @app.route('/')
     def index():
         page = request.args.get('page', 1, type=int)
@@ -63,7 +65,8 @@ def register_routes(app):
 
         if sort == 'deadline_asc':
             employees_with_expiry.sort(
-                key=lambda x: x['min_days_left'] if x['min_days_left'] is not None else float('inf'))
+                key=lambda x: x['min_days_left'] if x['min_days_left'] is not None else float('inf'),
+                reverse=True)
 
         return render_template(
             'index.html',
@@ -74,12 +77,6 @@ def register_routes(app):
             datetime=datetime,
             preflight_conditions=PREFLIGHT_CONDITIONS
         )
-
-    @app.route('/history/<int:id>')
-    def history(id):
-        employee = Employee.query.get_or_404(id)
-        examinations = Examination.query.filter_by(employee_id=id).order_by(Examination.exam_date.desc()).all()
-        return render_template('history.html', employee=employee, examinations=examinations)
 
     @app.route('/add', methods=['GET', 'POST'])
     def add():
@@ -99,10 +96,10 @@ def register_routes(app):
                 employee = Employee(**employee_data)
                 db.session.add(employee)
                 db.session.flush()  # Получаем ID сотрудника
+
                 for exam in examinations:
                     db.session.add(Examination(employee_id=employee.id, **exam))
 
-                # Пересчитываем сроки и состояние
                 expiry_data = calculate_expiry(employee)
                 employee.preflight_condition = expiry_data['employee'].preflight_condition
 
@@ -113,6 +110,7 @@ def register_routes(app):
                 db.session.rollback()
                 flash(f"Ошибка добавления сотрудника: {str(e)}", 'danger')
                 return redirect(url_for('add'))
+
         return render_template('add.html', preflight_conditions=PREFLIGHT_CONDITIONS)
 
     @app.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -135,7 +133,7 @@ def register_routes(app):
                 # Обновляем данные сотрудника
                 for key, value in employee_data.items():
                     setattr(employee, key, value)
-                Examination.query.filter_by(employee_id=id).delete()
+                Examination.query.filter_by(employee_id=id).delete()  # Удаляем старые осмотры
                 for exam in examinations:
                     db.session.add(Examination(employee_id=id, **exam))
 
@@ -154,6 +152,12 @@ def register_routes(app):
         examinations = Examination.query.filter_by(employee_id=id).all()
         return render_template('edit.html', employee=employee, examinations=examinations,
                                preflight_conditions=PREFLIGHT_CONDITIONS)
+
+    @app.route('/history/<int:id>')
+    def history(id):
+        employee = Employee.query.get_or_404(id)
+        examinations = Examination.query.filter_by(employee_id=id).order_by(Examination.exam_date.asc()).all()
+        return render_template('history.html', employee=employee, examinations=examinations)
 
     @app.route('/delete/<int:id>')
     def delete(id):

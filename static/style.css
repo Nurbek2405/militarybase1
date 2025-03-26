@@ -2,92 +2,134 @@
 body {
     font-family: 'Roboto', sans-serif;
     background-color: #f4f7fa;
+    margin: 0; /* Убираем лишние отступы */
 }
 
+/* Стили для шапки */
 .header {
     background-color: #343a40;
     color: white;
-    padding: 20px;
+    padding: 15px; /* Уменьшаем padding для мобильных */
     border-radius: 8px;
+    text-align: center;
 }
 
+/* Таблица */
 .table th, .table td {
     vertical-align: middle;
+    padding: 8px; /* Уменьшаем padding для компактности */
+    font-size: 14px; /* Уменьшаем шрифт по умолчанию */
 }
 
 .table-warning {
-    background-color: #ffff99; /* Желтая подсветка для сроков < 14 дней */
+    background-color: #ffff99;
 }
 
 .table-danger {
-    background-color: #ffcccc; /* Красная подсветка для истекших сроков или отстраненных */
+    background-color: #ffcccc;
 }
 
-.alert {
-    border-radius: 5px;
+/* Кнопки */
+.btn-primary, .btn-success, .btn-info, .btn-warning, .btn-danger, .btn-secondary {
+    padding: 6px 12px; /* Уменьшаем размер кнопок */
+    font-size: 14px;
 }
 
-.alert-success {
-    background-color: #d4edda;
-    color: #155724;
+/* Формы */
+.compact-form .form-control, .compact-form .form-select {
+    padding: 0.25rem 0.5rem;
+    font-size: 14px;
 }
 
-.alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-}
-
-.btn-warning {
-    background-color: #ffc107;
-    border-color: #ffc107;
-}
-
-.btn-warning:hover {
-    background-color: #e0a800;
-    border-color: #e0a800;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
-
-.btn-danger:hover {
-    background-color: #c82333;
-    border-color: #c82333;
-}
-
-.pagination .installedpage-link {
-    color: #007bff;
-}
-
-.pagination .page-link:hover {
-    background-color: #e9ecef;
+.compact-form .row {
+    margin-bottom: 0.5rem;
 }
 
 .form-label {
     font-weight: bold;
-    margin-bottom: 0; /* Убираем отступ снизу для компактности */
+    margin-bottom: 0;
 }
 
-.compact-form .form-control, .compact-form .form-select {
-    padding: 0.25rem 0.5rem; /* Уменьшаем внутренние отступы */
-}
+/* Медиа-запросы для смартфонов */
+@media (max-width: 768px) {
+    /* Шапка */
+    .header h1 {
+        font-size: 1.5rem; /* Уменьшаем заголовок */
+    }
+    .header h2 {
+        font-size: 1.2rem;
+    }
+    .header h3 {
+        font-size: 1rem;
+    }
 
-.compact-form .row {
-    margin-bottom: 0.5rem; /* Уменьшаем внешние отступы между строками */
-}
+    /* Таблица */
+    .table {
+        font-size: 12px; /* Уменьшаем шрифт таблицы */
+    }
+    .table thead {
+        display: none; /* Скрываем заголовки таблицы на смартфонах */
+    }
+    .table tr {
+        display: block;
+        margin-bottom: 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+    }
+    .table td {
+        display: block;
+        text-align: left;
+        padding: 6px;
+        border: none;
+    }
+    .table td:before {
+        content: attr(data-label); /* Используем data-label для подписи */
+        font-weight: bold;
+        display: block;
+        margin-bottom: 2px;
+    }
+    .table td:last-child {
+        text-align: center; /* Центрируем кнопки действий */
+    }
 
-.compact-form .col-auto {
-    width: auto; /* Минимизируем ширину меток */
+    /* Кнопки в таблице */
+    .table .btn {
+        margin: 2px;
+        width: 100%; /* Кнопки на всю ширину ячейки */
+    }
+
+    /* Формы */
+    .compact-form .row {
+        flex-direction: column; /* Вертикальная компоновка */
+        align-items: stretch;
+    }
+    .compact-form .col-auto, .compact-form .col {
+        width: 100%; /* Полная ширина для меток и полей */
+        margin-bottom: 5px;
+    }
+    .compact-form .col-form-label {
+        padding-right: 0; /* Убираем отступ справа */
+    }
+
+    /* Панель управления */
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .d-flex.justify-content-between > div {
+        margin-bottom: 10px;
+    }
+    .d-flex form {
+        flex-direction: column;
+    }
+    .d-flex .form-control, .d-flex .form-select, .d-flex .btn {
+        margin-bottom: 5px;
+        width: 100%;
+    }
+
+    /* Пагинация */
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 }

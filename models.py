@@ -1,28 +1,7 @@
-from app import db
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-
-PREFLIGHT_CONDITIONS = ['Допущен', 'Отстранен']
-EXAM_TYPES = ['ВЛК', 'КМО', 'УМО', 'КМО2']
-
-class Employee(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    fio = db.Column(db.String(100), nullable=False, unique=True)
-    birth_date = db.Column(db.Date, nullable=False)
-    position = db.Column(db.String(100), nullable=False)
-    order_no = db.Column(db.String(50), nullable=False)
-    preflight_condition = db.Column(db.String(100), default='Допущен')
-    note = db.Column(db.String(200))
-    examinations = db.relationship('Examination', backref='employee', lazy=True, cascade='all, delete')
-
-class Examination(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
-    exam_type = db.Column(db.String(50), nullable=False)
-    exam_date = db.Column(db.Date, nullable=False)
-    diagnosis = db.Column(db.String(200))
 
 def process_employee_form(form):
+    from app import PREFLIGHT_CONDITIONS, EXAM_TYPES  # Импортируем внутри функции
     preflight = form['preflight_condition'] if form['preflight_condition'] in PREFLIGHT_CONDITIONS else 'Допущен'
     employee_data = {
         'fio': form['fio'],
@@ -49,6 +28,7 @@ def process_employee_form(form):
     return employee_data, examinations
 
 def calculate_expiry(employee):
+    from app import EXAM_TYPES  # Импортируем внутри функции
     latest_exam_dates = {exam_type: None for exam_type in EXAM_TYPES}
     expiry_dates = {exam_type: None for exam_type in EXAM_TYPES}
     days_left = {exam_type: float('inf') for exam_type in EXAM_TYPES}
@@ -64,17 +44,16 @@ def calculate_expiry(employee):
     current_date = datetime.now().date()
     vlk_date = latest_exam_dates['ВЛК']
 
-    # Если есть ВЛК, все сроки рассчитываются от него
+    # Рассчитываем сроки на основе последнего ВЛК или индивидуально, если ВЛК нет
     if vlk_date:
-        expiry_dates['ВЛК'] = vlk_date + relativedelta(months=12)
-        expiry_dates['КМО'] = vlk_date + relativedelta(months=3)
-        expiry_dates['УМО'] = vlk_date + relativedelta(months=6)
-        expiry_dates['КМО2'] = vlk_date + relativedelta(months=9)
+        expiry_dates['ВЛК'] = vlk_date + timedelta(days=365)  # 365 дней от ВЛК
+        expiry_dates['КМО'] = vlk_date + timedelta(days=90)   # 90 дней от ВЛК
+        expiry_dates['УМО'] = vlk_date + timedelta(days=180)  # 180 дней от ВЛК
+        expiry_dates['КМО2'] = vlk_date + timedelta(days=270) # 270 дней от ВЛК
     else:
-        # Если ВЛК нет, каждый осмотр имеет срок действия 3 месяца до следующего осмотра того же типа
         for exam_type in EXAM_TYPES:
             if latest_exam_dates[exam_type]:
-                expiry_dates[exam_type] = latest_exam_dates[exam_type] + relativedelta(months=3)
+                expiry_dates[exam_type] = latest_exam_dates[exam_type] + timedelta(days=365)
 
     # Рассчитываем дни до окончания для каждого типа осмотра
     for exam_type in EXAM_TYPES:
