@@ -83,19 +83,43 @@
                     <td>{{ employee.order_no }}</td>
                     <td>
                         {% set vlk_exam = employee.examinations | selectattr('exam_type', 'equalto', 'ВЛК') | list | last %}
-                        {{ vlk_exam.exam_date.strftime('%Y-%m-%d') if vlk_exam else '' }}
+                        {% if vlk_exam %}
+                            {{ vlk_exam.exam_date.strftime('%Y-%m-%d') }}
+                        {% elif item.vlk_forecast %}
+                            {{ item.vlk_forecast.strftime('%Y-%m-%d') }} (Прогноз)
+                        {% else %}
+                            -
+                        {% endif %}
                     </td>
                     <td>
                         {% set kmo_exam = employee.examinations | selectattr('exam_type', 'equalto', 'КМО') | list | last %}
-                        {{ kmo_exam.exam_date.strftime('%Y-%m-%d') if kmo_exam else '' }}
+                        {% if kmo_exam %}
+                            {{ kmo_exam.exam_date.strftime('%Y-%m-%d') }}
+                        {% elif item.kmo_forecast %}
+                            {{ item.kmo_forecast.strftime('%Y-%m-%d') }} (Прогноз)
+                        {% else %}
+                            -
+                        {% endif %}
                     </td>
                     <td>
                         {% set umo_exam = employee.examinations | selectattr('exam_type', 'equalto', 'УМО') | list | last %}
-                        {{ umo_exam.exam_date.strftime('%Y-%m-%d') if umo_exam else '' }}
+                        {% if umo_exam %}
+                            {{ umo_exam.exam_date.strftime('%Y-%m-%d') }}
+                        {% elif item.umo_forecast %}
+                            {{ item.umo_forecast.strftime('%Y-%m-%d') }} (Прогноз)
+                        {% else %}
+                            -
+                        {% endif %}
                     </td>
                     <td>
                         {% set kmo2_exam = employee.examinations | selectattr('exam_type', 'equalto', 'КМО2') | list | last %}
-                        {{ kmo2_exam.exam_date.strftime('%Y-%m-%d') if kmo2_exam else '' }}
+                        {% if kmo2_exam %}
+                            {{ kmo2_exam.exam_date.strftime('%Y-%m-%d') }}
+                        {% elif item.kmo2_forecast %}
+                            {{ item.kmo2_forecast.strftime('%Y-%m-%d') }} (Прогноз)
+                        {% else %}
+                            -
+                        {% endif %}
                     </td>
                     <td>
                         {% if item.min_days_left is not none %}

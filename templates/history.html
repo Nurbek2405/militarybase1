@@ -33,7 +33,7 @@
                     <td>{{ exam.exam_date.strftime('%Y-%m-%d') if exam.exam_date else '' }}</td>
                     <td>{{ expiry_date.strftime('%Y-%m-%d') if expiry_date else '' }}</td>
                     <td>{{ exam.diagnosis or '' }}</td>
-                    <td>{{ exam.note or '' }}</td>
+                    <td>{{ employee.note or '' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

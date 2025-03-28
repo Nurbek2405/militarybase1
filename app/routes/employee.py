@@ -26,11 +26,13 @@ def add():
                 db.session.add(Examination(employee_id=employee.id, **exam))
 
             recalculate_all_employees(db.session)  # Пересчитываем всех сотрудников
+            db.session.commit()  # Явно фиксируем изменения
             flash('Сотрудник успешно добавлен!', 'success')
             return redirect(url_for('index'))
         except Exception as e:
             db.session.rollback()
             flash(f"Ошибка добавления сотрудника: {str(e)}", 'danger')
+            print(f"Ошибка в add(): {str(e)}")  # Добавляем отладочный вывод
             return redirect(url_for('add'))
 
     return render_template('add.html', preflight_conditions=PREFLIGHT_CONDITIONS)
@@ -60,11 +62,13 @@ def edit(id):
                 db.session.add(Examination(employee_id=id, **exam))
 
             recalculate_all_employees(db.session)  # Пересчитываем всех сотрудников
+            db.session.commit()  # Явно фиксируем изменения
             flash('Данные сотрудника успешно обновлены!', 'success')
             return redirect(url_for('index'))
         except Exception as e:
             db.session.rollback()
             flash(f"Ошибка обновления данных: {str(e)}", 'danger')
+            print(f"Ошибка в edit(): {str(e)}")  # Добавляем отладочный вывод
             return redirect(url_for('edit', id=id))
 
     examinations = Examination.query.filter_by(employee_id=id).all()
@@ -97,7 +101,10 @@ def delete(id):
     try:
         db.session.delete(employee)
         recalculate_all_employees(db.session)  # Пересчитываем всех сотрудников
+        db.session.commit()  # Явно фиксируем изменения
         flash('Сотрудник успешно удален!', 'success')
     except Exception as e:
+        db.session.rollback()
         flash(f"Ошибка удаления сотрудника: {str(e)}", 'danger')
+        print(f"Ошибка в delete(): {str(e)}")  # Добавляем отладочный вывод
     return redirect(url_for('index'))

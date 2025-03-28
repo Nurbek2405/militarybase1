@@ -19,7 +19,7 @@ db = SQLAlchemy(app)
 # Определяем модели
 PREFLIGHT_CONDITIONS = ['Допущен', 'Отстранен']
 EXAM_TYPES = ['ВЛК', 'КМО', 'УМО', 'КМО2']
-
+    
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fio = db.Column(db.String(100), nullable=False, unique=True)
@@ -36,6 +36,7 @@ class Examination(db.Model):
     exam_type = db.Column(db.String(50), nullable=False)
     exam_date = db.Column(db.Date, nullable=False)
     diagnosis = db.Column(db.String(200))
+    note = db.Column(db.String(200))  # Добавляем поле note
 
 register_routes(app)
 

@@ -22,7 +22,7 @@ def process_employee_form(form):
                     'exam_type': exam_type,
                     'exam_date': exam_date,
                     'diagnosis': form.get(diag_key),
-                    'note': None  # Примечание для осмотров теперь не используется
+                    'note': None  # Примечание для осмотров не используется
                 })
             except ValueError:
                 print(f"Ошибка формата даты для {exam_type}: {form[date_key]}")
@@ -33,6 +33,7 @@ def calculate_expiry(employee):
     latest_exam_dates = {exam_type: None for exam_type in EXAM_TYPES}
     expiry_dates = {exam_type: None for exam_type in EXAM_TYPES}
     days_left = {exam_type: float('inf') for exam_type in EXAM_TYPES}
+    forecast_dates = {exam_type: None for exam_type in EXAM_TYPES}  # Прогнозные даты
     nearest_exam = None
     min_days_left = float('inf')
 
@@ -65,6 +66,34 @@ def calculate_expiry(employee):
                 min_days_left = days_left[exam_type]
                 nearest_exam = exam_type
 
+    # Рассчитываем прогнозные даты для осмотров
+    # Если есть фактическая дата ВЛК, используем её как базовую
+    if vlk_date:
+        forecast_dates['ВЛК'] = vlk_date + timedelta(days=365)  # Следующий ВЛК через год
+        forecast_dates['КМО'] = vlk_date + timedelta(days=90)   # КМО через 3 месяца
+        forecast_dates['УМО'] = vlk_date + timedelta(days=180)  # УМО через 6 месяцев
+        forecast_dates['КМО2'] = vlk_date + timedelta(days=270) # КМО2 через 9 месяцев
+
+    # Если есть более поздние фактические осмотры, корректируем прогнозы
+    for exam_type in EXAM_TYPES:
+        if latest_exam_dates[exam_type] and (not vlk_date or latest_exam_dates[exam_type] > vlk_date):
+            if exam_type == 'ВЛК':
+                forecast_dates['ВЛК'] = latest_exam_dates['ВЛК'] + timedelta(days=365)
+                forecast_dates['КМО'] = latest_exam_dates['ВЛК'] + timedelta(days=90)
+                forecast_dates['УМО'] = latest_exam_dates['ВЛК'] + timedelta(days=180)
+                forecast_dates['КМО2'] = latest_exam_dates['ВЛК'] + timedelta(days=270)
+            elif exam_type == 'КМО':
+                forecast_dates['КМО'] = latest_exam_dates['КМО'] + timedelta(days=365)
+            elif exam_type == 'УМО':
+                forecast_dates['УМО'] = latest_exam_dates['УМО'] + timedelta(days=365)
+            elif exam_type == 'КМО2':
+                forecast_dates['КМО2'] = latest_exam_dates['КМО2'] + timedelta(days=365)
+
+    # Если фактическая дата осмотра уже есть, убираем прогноз для этого осмотра
+    for exam_type in EXAM_TYPES:
+        if latest_exam_dates[exam_type]:
+            forecast_dates[exam_type] = None  # Убираем прогноз, если осмотр уже был
+
     # Обновляем состояние сотрудника
     if min_days_left < 0 or not employee.examinations:
         employee.preflight_condition = 'Отстранен'
@@ -82,7 +111,11 @@ def calculate_expiry(employee):
         'umo_days_left': days_left['УМО'] if days_left['УМО'] != float('inf') else None,
         'kmo2_days_left': days_left['КМО2'] if days_left['КМО2'] != float('inf') else None,
         'min_days_left': min_days_left if min_days_left != float('inf') else None,
-        'nearest_exam': nearest_exam
+        'nearest_exam': nearest_exam,
+        'vlk_forecast': forecast_dates['ВЛК'],
+        'kmo_forecast': forecast_dates['КМО'],
+        'umo_forecast': forecast_dates['УМО'],
+        'kmo2_forecast': forecast_dates['КМО2']
     }
 
 def recalculate_all_employees(db_session):

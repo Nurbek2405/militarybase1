@@ -2,7 +2,6 @@ from flask import render_template, request
 from app.models import calculate_expiry
 from datetime import datetime
 
-
 def index():
     from main import db, Employee, PREFLIGHT_CONDITIONS  # Импорт внутри функции
 
