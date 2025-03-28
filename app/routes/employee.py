@@ -1,8 +1,8 @@
 from flask import render_template, request, redirect, url_for, flash
-from app.models import process_employee_form, calculate_expiry, recalculate_all_employees
+from app.models import process_employee_form, recalculate_all_employees
 
 def add():
-    from app.main import db, Employee, Examination, PREFLIGHT_CONDITIONS
+    from main import db, Employee, Examination, PREFLIGHT_CONDITIONS
 
     if request.method == 'POST':
         try:
@@ -35,7 +35,7 @@ def add():
     return render_template('add.html', preflight_conditions=PREFLIGHT_CONDITIONS)
 
 def edit(id):
-    from app.main import db, Employee, Examination, PREFLIGHT_CONDITIONS
+    from main import db, Employee, Examination, PREFLIGHT_CONDITIONS
 
     employee = Employee.query.get_or_404(id)
     if request.method == 'POST':
@@ -71,14 +71,14 @@ def edit(id):
                            preflight_conditions=PREFLIGHT_CONDITIONS)
 
 def history(id):
-    from app.main import db, Employee, Examination
+    from main import Employee, Examination
 
     employee = Employee.query.get_or_404(id)
     examinations = Examination.query.filter_by(employee_id=id).order_by(Examination.exam_date.asc()).all()
     return render_template('history.html', employee=employee, examinations=examinations)
 
 def delete(id):
-    from app.main import db, Employee
+    from main import db, Employee
 
     employee = Employee.query.get_or_404(id)
     try:

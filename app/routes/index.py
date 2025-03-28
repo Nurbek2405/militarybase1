@@ -1,9 +1,10 @@
 from flask import render_template, request
 from app.models import calculate_expiry
-from datetime import datetime, timedelta
+from datetime import datetime
+
 
 def index():
-    from app.main import db, Employee, Examination, PREFLIGHT_CONDITIONS  # Импорт внутри функции
+    from main import db, Employee, PREFLIGHT_CONDITIONS  # Импорт внутри функции
 
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)

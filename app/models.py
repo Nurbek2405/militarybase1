@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 def process_employee_form(form):
-    from app.main import PREFLIGHT_CONDITIONS, EXAM_TYPES
+    from main import PREFLIGHT_CONDITIONS, EXAM_TYPES
     preflight = form['preflight_condition'] if form['preflight_condition'] in PREFLIGHT_CONDITIONS else 'Допущен'
     employee_data = {
         'fio': form['fio'],
@@ -28,7 +28,7 @@ def process_employee_form(form):
     return employee_data, examinations
 
 def calculate_expiry(employee):
-    from app.main import EXAM_TYPES
+    from main import EXAM_TYPES
     latest_exam_dates = {exam_type: None for exam_type in EXAM_TYPES}
     expiry_dates = {exam_type: None for exam_type in EXAM_TYPES}
     days_left = {exam_type: float('inf') for exam_type in EXAM_TYPES}
@@ -86,7 +86,7 @@ def calculate_expiry(employee):
 
 def recalculate_all_employees(db_session):
     """Пересчитывает сроки для всех сотрудников в базе."""
-    from app.main import Employee
+    from main import Employee
     employees = Employee.query.all()
     for emp in employees:
         db_session.refresh(emp)  # Синхронизируем объект с базой

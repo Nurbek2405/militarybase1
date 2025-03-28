@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from app.routes import register_routes
 from datetime import datetime, timedelta
 
-app = Flask(__name__, template_folder='../templates')  # Явно указываем путь к templates относительно app/
+app = Flask(__name__, template_folder='templates') # Явно указываем путь к templates относительно app/
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6')
 base_dir = os.path.abspath(os.path.dirname(__file__))

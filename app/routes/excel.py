@@ -7,7 +7,7 @@ import xlrd
 from datetime import datetime
 
 def export_excel_xlsx():
-    from app.main import db, Employee, Examination  # Импорт внутри функции
+    from main import Employee  # Импорт внутри функции
 
     employees = Employee.query.all()
     wb = Workbook()
@@ -61,7 +61,7 @@ def export_excel_xlsx():
     )
 
 def export_excel_xls():
-    from app.main import db, Employee, Examination  # Импорт внутри функции
+    from main import Employee  # Импорт внутри функции
 
     employees = Employee.query.all()
     wb = xlwt.Workbook(encoding='utf-8')
@@ -115,7 +115,7 @@ def export_excel_xls():
     )
 
 def import_excel():
-    from app.main import db, Employee, Examination, PREFLIGHT_CONDITIONS
+    from main import db, Employee, Examination, PREFLIGHT_CONDITIONS
     from app.models import recalculate_all_employees
 
     if request.method == 'POST':
