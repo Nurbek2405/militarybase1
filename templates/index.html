@@ -26,96 +26,102 @@
             {% endif %}
         {% endwith %}
 
-        <div class="d-flex justify-content-between mb-3">
-            <div>
-                <a href="{{ url_for('add') }}" class="btn btn-primary">Добавить сотрудника</a>
-                <a href="{{ url_for('export_excel_xlsx') }}" class="btn btn-success">Экспорт .xlsx</a>
-                <a href="{{ url_for('export_excel_xls') }}" class="btn btn-success">Экспорт .xls</a>
-                <a href="{{ url_for('import_excel') }}" class="btn btn-info">Импорт Excel</a>
-            </div>
-            <form method="GET" action="{{ url_for('index') }}" class="d-flex">
+        <!-- Кнопки экспорта/импорта -->
+        <div class="btn-group mb-3">
+            <a href="{{ url_for('add') }}" class="btn btn-primary">Добавить сотрудника</a>
+            <a href="{{ url_for('export_excel_xlsx') }}" class="btn btn-success">Экспорт .xlsx</a>
+            <a href="{{ url_for('export_excel_xls') }}" class="btn btn-success">Экспорт .xls</a>
+            <a href="{{ url_for('import_excel') }}" class="btn btn-info">Импорт Excel</a>
+        </div>
+
+        <!-- Сортировка и поиск -->
+        <div class="sorting-controls mb-3">
+            <select name="sort" onchange="location = this.value;" class="form-select me-2" style="width: auto;">
+                <option value="{{ url_for('index', page=page, per_page=per_page, sort='fio_asc', search=request.args.get('search', '')) }}" {% if request.args.get('sort') == 'fio_asc' %}selected{% endif %}>По алфавиту (А-Я)</option>
+                <option value="{{ url_for('index', page=page, per_page=per_page, sort='fio_desc', search=request.args.get('search', '')) }}" {% if request.args.get('sort') == 'fio_desc' %}selected{% endif %}>По алфавиту (Я-А)</option>
+                <option value="{{ url_for('index', page=page, per_page=per_page, sort='deadline_asc', search=request.args.get('search', '')) }}" {% if request.args.get('sort', 'deadline_asc') == 'deadline_asc' %}selected{% endif %}>По ближайшему сроку</option>
+                <option value="{{ url_for('index', page=page, per_page=per_page, sort='suspended', search=request.args.get('search', '')) }}" {% if request.args.get('sort') == 'suspended' %}selected{% endif %}>Только отстраненные</option>
+            </select>
+            <form method="GET" action="{{ url_for('index') }}" class="d-flex flex-grow-1">
                 <input type="text" name="search" class="form-control me-2" placeholder="Поиск по ФИО" value="{{ request.args.get('search', '') }}">
-                <select name="sort" class="form-select me-2" style="width: auto;">
-                    <option value="fio_asc" {% if request.args.get('sort') == 'fio_asc' %}selected{% endif %}>По алфавиту (А-Я)</option>
-                    <option value="fio_desc" {% if request.args.get('sort') == 'fio_desc' %}selected{% endif %}>По алфавиту (Я-А)</option>
-                    <option value="deadline_asc" {% if request.args.get('sort', 'deadline_asc') == 'deadline_asc' %}selected{% endif %}>По ближайшему сроку</option>
-                    <option value="suspended" {% if request.args.get('sort') == 'suspended' %}selected{% endif %}>Только отстраненные</option>
-                </select>
+                <input type="hidden" name="page" value="{{ page }}">
+                <input type="hidden" name="per_page" value="{{ per_page }}">
+                <input type="hidden" name="sort" value="{{ request.args.get('sort', 'deadline_asc') }}">
                 <button type="submit" class="btn btn-secondary">Применить</button>
             </form>
         </div>
 
-<table class="table table-striped table-bordered">
-    <thead class="table-dark">
-        <tr>
-            <th>№</th>
-            <th>ФИО</th>
-            <th>Дата рождения</th>
-            <th>Должность</th>
-            <th>По приказу № 721</th>
-            <th>ВЛК срок</th>
-            <th>КМО срок</th>
-            <th>УМО срок</th>
-            <th>КМО2 срок</th>
-            <th>Дней до осмотра</th>
-            <th>Состояние</th>
-            <th>Примечание</th>
-            <th>Действия</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in employees_with_expiry %}
-        {% set employee = item.employee %}
-        {% set has_warning = item.min_days_left is not none and 0 <= item.min_days_left <= 30 %}
-        {% set has_expired = item.min_days_left is not none and item.min_days_left < 0 %}
-        <tr class="{% if has_expired %}table-danger{% elif has_warning %}table-warning{% endif %}">
-            <td data-label="№">{{ loop.index + (page - 1) * per_page }}</td>
-            <td data-label="ФИО">{{ employee.fio }}</td>
-            <td data-label="Дата рождения">{{ employee.birth_date.strftime('%Y-%m-%d') if employee.birth_date else '' }}</td>
-            <td data-label="Должность">{{ employee.position }}</td>
-            <td data-label="По приказу № 721">{{ employee.order_no }}</td>
-            <!-- Отображаем последние реальные даты осмотров из базы -->
-            <td data-label="ВЛК срок">
-                {% set vlk_exam = employee.examinations | selectattr('exam_type', 'equalto', 'ВЛК') | list | last %}
-                {{ vlk_exam.exam_date.strftime('%Y-%m-%d') if vlk_exam else '' }}
-            </td>
-            <td data-label="КМО срок">
-                {% set kmo_exam = employee.examinations | selectattr('exam_type', 'equalto', 'КМО') | list | last %}
-                {{ kmo_exam.exam_date.strftime('%Y-%m-%d') if kmo_exam else '' }}
-            </td>
-            <td data-label="УМО срок">
-                {% set umo_exam = employee.examinations | selectattr('exam_type', 'equalto', 'УМО') | list | last %}
-                {{ umo_exam.exam_date.strftime('%Y-%m-%d') if umo_exam else '' }}
-            </td>
-            <td data-label="КМО2 срок">
-                {% set kmo2_exam = employee.examinations | selectattr('exam_type', 'equalto', 'КМО2') | list | last %}
-                {{ kmo2_exam.exam_date.strftime('%Y-%m-%d') if kmo2_exam else '' }}
-            </td>
-            <td data-label="Дней до осмотра">
-                {% if item.min_days_left is not none %}
-                    {{ item.nearest_exam }}:
-                    {% if item.min_days_left < 0 %}
-                        Истёк срок ({{-item.min_days_left}} дней)
-                    {% elif item.min_days_left <= 30 %}
-                        Менее месяца ({{ item.min_days_left }} дней)
-                    {% else %}
-                        {{ item.min_days_left }} дней
-                    {% endif %}
-                {% else %}
-                    Нет данных
-                {% endif %}
-            </td>
-            <td data-label="Состояние">{{ employee.preflight_condition }}</td>
-            <td data-label="Примечание">{{ employee.note or '' }}</td>
-            <td data-label="Действия">
-                <a href="{{ url_for('history', id=employee.id) }}" class="btn btn-sm btn-info">История</a>
-                <a href="{{ url_for('edit', id=employee.id) }}" class="btn btn-sm btn-warning">Редактировать</a>
-                <a href="{{ url_for('delete', id=employee.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Вы уверены?')">Удалить</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <!-- Таблица -->
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>№</th>
+                    <th>ФИО</th>
+                    <th>Дата рождения</th>
+                    <th>Должность</th>
+                    <th>По приказу № 721</th>
+                    <th>ВЛК</th>
+                    <th>КМО</th>
+                    <th>УМО</th>
+                    <th>КМО2</th>
+                    <th>Дней до осмотра</th>
+                    <th>Состояние</th>
+                    <th>Примечание</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in employees_with_expiry %}
+                {% set employee = item.employee %}
+                {% set has_warning = item.min_days_left is not none and 0 <= item.min_days_left <= 30 %}
+                {% set has_expired = item.min_days_left is not none and item.min_days_left < 0 %}
+                <tr class="{% if has_expired %}table-danger{% elif has_warning %}table-warning{% endif %}">
+                    <td>{{ loop.index + (page - 1) * per_page }}</td>
+                    <td>{{ employee.fio }}</td>
+                    <td>{{ employee.birth_date.strftime('%Y-%m-%d') if employee.birth_date else '' }}</td>
+                    <td>{{ employee.position }}</td>
+                    <td>{{ employee.order_no }}</td>
+                    <td>
+                        {% set vlk_exam = employee.examinations | selectattr('exam_type', 'equalto', 'ВЛК') | list | last %}
+                        {{ vlk_exam.exam_date.strftime('%Y-%m-%d') if vlk_exam else '' }}
+                    </td>
+                    <td>
+                        {% set kmo_exam = employee.examinations | selectattr('exam_type', 'equalto', 'КМО') | list | last %}
+                        {{ kmo_exam.exam_date.strftime('%Y-%m-%d') if kmo_exam else '' }}
+                    </td>
+                    <td>
+                        {% set umo_exam = employee.examinations | selectattr('exam_type', 'equalto', 'УМО') | list | last %}
+                        {{ umo_exam.exam_date.strftime('%Y-%m-%d') if umo_exam else '' }}
+                    </td>
+                    <td>
+                        {% set kmo2_exam = employee.examinations | selectattr('exam_type', 'equalto', 'КМО2') | list | last %}
+                        {{ kmo2_exam.exam_date.strftime('%Y-%m-%d') if kmo2_exam else '' }}
+                    </td>
+                    <td>
+                        {% if item.min_days_left is not none %}
+                            {{ item.nearest_exam }}:
+                            {% if item.min_days_left < 0 %}
+                                Истёк срок ({{-item.min_days_left}} дней)
+                            {% elif item.min_days_left <= 30 %}
+                                Менее месяца ({{ item.min_days_left }} дней)
+                            {% else %}
+                                {{ item.min_days_left }} дней
+                            {% endif %}
+                        {% else %}
+                            Нет данных
+                        {% endif %}
+                    </td>
+                    <td>{{ employee.preflight_condition }}</td>
+                    <td>{{ employee.note or '' }}</td>
+                    <td class="actions">
+                        <a href="{{ url_for('history', id=employee.id) }}" class="btn btn-sm btn-info">История</a>
+                        <a href="{{ url_for('edit', id=employee.id) }}" class="btn btn-sm btn-warning">Редактировать</a>
+                        <a href="{{ url_for('delete', id=employee.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Вы уверены?')">Удалить</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
         <div class="d-flex justify-content-center mt-3">
             <nav>
@@ -137,5 +143,67 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Вычисляем ширину каждого столбца на основе самого длинного текста в этом столбце
+        function adjustColumnWidths() {
+            if (window.innerWidth <= 768) { // Только для мобильных
+                console.log("Запуск adjustColumnWidths для мобильных устройств");
+
+                const table = document.querySelector('.table');
+                const rows = table.querySelectorAll('tr');
+                if (!rows.length) {
+                    console.log("Таблица пуста или не найдена");
+                    return;
+                }
+
+                const columnCount = rows[0].children.length; // Количество столбцов
+                const maxWidths = Array(columnCount).fill(0); // Массив для хранения максимальных ширин
+
+                // Создаём временный элемент для измерения ширины текста
+                const tempDiv = document.createElement('div');
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.visibility = 'hidden';
+                tempDiv.style.whiteSpace = 'nowrap';
+                tempDiv.style.fontSize = '11px'; // Соответствует шрифту таблицы
+                tempDiv.style.padding = '4px'; // Учитываем padding
+                document.body.appendChild(tempDiv);
+
+                // Проходим по всем строкам и ячейкам
+                rows.forEach(row => {
+                    Array.from(row.children).forEach((cell, index) => {
+                        if (cell.classList.contains('actions')) {
+                            // Для столбца "Действия" измеряем ширину блока с кнопками
+                            const buttonsWidth = cell.scrollWidth; // Учитываем всю ширину содержимого
+                            maxWidths[index] = Math.max(maxWidths[index], buttonsWidth);
+                        } else {
+                            // Для остальных ячеек измеряем ширину текста
+                            tempDiv.textContent = cell.textContent.trim();
+                            const textWidth = tempDiv.offsetWidth;
+                            maxWidths[index] = Math.max(maxWidths[index], textWidth);
+                        }
+                    });
+                });
+
+                // Удаляем временный элемент
+                document.body.removeChild(tempDiv);
+
+                // Логируем вычисленные ширины
+                console.log("Максимальные ширины столбцов (в пикселях):", maxWidths);
+
+                // Применяем максимальную ширину к каждому столбцу
+                for (let colIndex = 0; colIndex < columnCount; colIndex++) {
+                    const cellsInColumn = table.querySelectorAll(`th:nth-child(${colIndex + 1}), td:nth-child(${colIndex + 1})`);
+                    cellsInColumn.forEach(cell => {
+                        cell.style.width = `${maxWidths[colIndex]}px`;
+                        cell.style.minWidth = `${maxWidths[colIndex]}px`; // Устанавливаем минимальную ширину
+                    });
+                }
+            }
+        }
+
+        // Выполняем при загрузке страницы и при изменении размера окна
+        window.addEventListener('load', adjustColumnWidths);
+        window.addEventListener('resize', adjustColumnWidths);
+    </script>
 </body>
 </html>

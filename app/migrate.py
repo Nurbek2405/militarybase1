@@ -9,11 +9,16 @@ db_path = os.path.join(base_dir, 'instance', 'medical_db.sqlite')
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
-# Добавляем столбец note
-cursor.execute("ALTER TABLE employee ADD COLUMN note VARCHAR(200)")
+# Проверяем, существует ли столбец note в таблице examination
+cursor.execute("PRAGMA table_info(examination)")
+columns = [info[1] for info in cursor.fetchall()]
+if 'note' not in columns:
+    # Добавляем столбец note в таблицу examination
+    cursor.execute("ALTER TABLE examination ADD COLUMN note VARCHAR(200)")
+    print("Столбец 'note' успешно добавлен в таблицу 'examination'!")
+else:
+    print("Столбец 'note' уже существует в таблице 'examination'.")
 
 # Сохраняем изменения
 conn.commit()
 conn.close()
-
-print("Столбец 'note' успешно добавлен в таблицу 'employee'!")

@@ -21,7 +21,8 @@ def process_employee_form(form):
                 examinations.append({
                     'exam_type': exam_type,
                     'exam_date': exam_date,
-                    'diagnosis': form.get(diag_key)
+                    'diagnosis': form.get(diag_key),
+                    'note': None  # Примечание для осмотров теперь не используется
                 })
             except ValueError:
                 print(f"Ошибка формата даты для {exam_type}: {form[date_key]}")

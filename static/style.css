@@ -50,86 +50,135 @@ body {
     margin-bottom: 0;
 }
 
-/* Медиа-запросы для смартфонов */
+/* Основные стили таблицы */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.table th, .table td {
+    padding: 8px;
+    vertical-align: middle;
+    font-size: 14px;
+    border: 1px solid #dee2e6;
+    box-sizing: border-box;
+}
+
+.table th {
+    background-color: #343a40;
+    color: white;
+    font-weight: bold;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f8f9fa;
+}
+
+.table-warning {
+    background-color: #fff3cd;
+}
+
+.table-danger {
+    background-color: #f8d7da;
+}
+
+/* Стили для кнопок и сортировки */
+.btn-group {
+    margin-bottom: 10px;
+}
+
+.btn-group .btn {
+    margin-right: 5px;
+}
+
+.sorting-controls {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* Стили для заголовков */
+.header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.header h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.header h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Адаптивность для мобильных */
 @media (max-width: 768px) {
-    /* Шапка */
-    .header h1 {
-        font-size: 1.5rem; /* Уменьшаем заголовок */
+    .table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
     }
-    .header h2 {
+
+    .table thead, .table tbody, .table tr {
+        display: table;
+        width: auto;
+    }
+
+    .table th, .table td {
+        padding: 4px;
+        font-size: 11px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .table th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    /* Кнопки в одну строку (для index.html) */
+    .table .actions {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 5px;
+        justify-content: center;
+    }
+
+    .table .btn {
+        padding: 2px 6px;
+        font-size: 10px;
+        margin: 0;
+    }
+
+    /* Сортировка (для index.html) */
+    .sorting-controls {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sorting-controls select, .sorting-controls input, .sorting-controls button {
+        font-size: 12px;
+        padding: 4px;
+    }
+
+    /* Уменьшаем заголовки на мобильных */
+    .header h1 {
         font-size: 1.2rem;
     }
-    .header h3 {
+
+    .header h2 {
         font-size: 1rem;
     }
 
-    /* Таблица */
-    .table {
-        font-size: 12px; /* Уменьшаем шрифт таблицы */
-    }
-    .table thead {
-        display: none; /* Скрываем заголовки таблицы на смартфонах */
-    }
-    .table tr {
-        display: block;
-        margin-bottom: 10px;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-    }
-    .table td {
-        display: block;
-        text-align: left;
-        padding: 6px;
-        border: none;
-    }
-    .table td:before {
-        content: attr(data-label); /* Используем data-label для подписи */
-        font-weight: bold;
-        display: block;
-        margin-bottom: 2px;
-    }
-    .table td:last-child {
-        text-align: center; /* Центрируем кнопки действий */
-    }
-
-    /* Кнопки в таблице */
-    .table .btn {
-        margin: 2px;
-        width: 100%; /* Кнопки на всю ширину ячейки */
-    }
-
-    /* Формы */
-    .compact-form .row {
-        flex-direction: column; /* Вертикальная компоновка */
-        align-items: stretch;
-    }
-    .compact-form .col-auto, .compact-form .col {
-        width: 100%; /* Полная ширина для меток и полей */
-        margin-bottom: 5px;
-    }
-    .compact-form .col-form-label {
-        padding-right: 0; /* Убираем отступ справа */
-    }
-
-    /* Панель управления */
-    .d-flex.justify-content-between {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .d-flex.justify-content-between > div {
-        margin-bottom: 10px;
-    }
-    .d-flex form {
-        flex-direction: column;
-    }
-    .d-flex .form-control, .d-flex .form-select, .d-flex .btn {
-        margin-bottom: 5px;
-        width: 100%;
-    }
-
-    /* Пагинация */
-    .pagination {
-        flex-wrap: wrap;
-        justify-content: center;
+    .header h3 {
+        font-size: 0.9rem;
     }
 }

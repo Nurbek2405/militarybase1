@@ -16,7 +16,9 @@ def export_excel_xlsx():
 
     headers = [
         'ID', 'ФИО', 'Дата рождения', 'Должность', 'По приказу № 721', 'Состояние', 'Примечание',
-        'ВЛК дата', 'ВЛК диагноз', 'КМО дата', 'КМО диагноз', 'УМО дата', 'УМО диагноз',
+        'ВЛК дата', 'ВЛК диагноз',
+        'КМО дата', 'КМО диагноз',
+        'УМО дата', 'УМО диагноз',
         'КМО2 дата', 'КМО2 диагноз'
     ]
     ws.append(headers)
@@ -41,7 +43,9 @@ def export_excel_xlsx():
             emp.id, emp.fio,
             emp.birth_date.strftime('%Y-%m-%d') if emp.birth_date else '',
             emp.position, emp.order_no, emp.preflight_condition, emp.note or '',
-            vlk_date, vlk_diagnosis, kmo_date, kmo_diagnosis, umo_date, umo_diagnosis,
+            vlk_date, vlk_diagnosis,
+            kmo_date, kmo_diagnosis,
+            umo_date, umo_diagnosis,
             kmo2_date, kmo2_diagnosis
         ]
         ws.append(row)
@@ -69,7 +73,9 @@ def export_excel_xls():
 
     headers = [
         'ID', 'ФИО', 'Дата рождения', 'Должность', 'По приказу № 721', 'Состояние', 'Примечание',
-        'ВЛК дата', 'ВЛК диагноз', 'КМО дата', 'КМО диагноз', 'УМО дата', 'УМО диагноз',
+        'ВЛК дата', 'ВЛК диагноз',
+        'КМО дата', 'КМО диагноз',
+        'УМО дата', 'УМО диагноз',
         'КМО2 дата', 'КМО2 диагноз'
     ]
     for col, header in enumerate(headers):
@@ -96,7 +102,9 @@ def export_excel_xls():
             emp.id, emp.fio,
             emp.birth_date.strftime('%Y-%m-%d') if emp.birth_date else '',
             emp.position, emp.order_no, emp.preflight_condition, emp.note or '',
-            vlk_date, vlk_diagnosis, kmo_date, kmo_diagnosis, umo_date, umo_diagnosis,
+            vlk_date, vlk_diagnosis,
+            kmo_date, kmo_diagnosis,
+            umo_date, umo_diagnosis,
             kmo2_date, kmo2_diagnosis
         ]
         for col, value in enumerate(row):
@@ -143,7 +151,7 @@ def import_excel():
                 skipped_count = 0
                 for row in data_rows:
                     if file.filename.endswith('.xlsx'):
-                        data = [cell.value if cell.value is not None else '' for cell in row]
+                        data = [cell.value if cell.value is not none else '' for cell in row]
                     else:
                         data = [str(cell) if cell else '' for cell in row]
 
@@ -175,7 +183,7 @@ def import_excel():
                     db.session.flush()
 
                     for i, exam_type in enumerate(['ВЛК', 'КМО', 'УМО', 'КМО2']):
-                        date_idx = 7 + i * 2
+                        date_idx = 7 + i * 2  # Уменьшаем индекс, так как убрали примечания
                         diag_idx = 8 + i * 2
                         exam_date_str = data[date_idx]
                         if exam_date_str:
@@ -185,7 +193,8 @@ def import_excel():
                                     employee_id=employee.id,
                                     exam_type=exam_type,
                                     exam_date=exam_date,
-                                    diagnosis=data[diag_idx] if data[diag_idx] else None
+                                    diagnosis=data[diag_idx] if data[diag_idx] else None,
+                                    note=None  # Примечание для осмотров теперь не используется
                                 )
                                 db.session.add(exam)
                             except ValueError:

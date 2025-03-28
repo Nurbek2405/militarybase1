@@ -1,17 +1,29 @@
 from datetime import datetime
 def process_employee_form(form):
-    return {
+    from main import PREFLIGHT_CONDITIONS, EXAM_TYPES
+    preflight = form['preflight_condition'] if form['preflight_condition'] in PREFLIGHT_CONDITIONS else 'Допущен'
+    employee_data = {
         'fio': form['fio'],
-        'birth_date': datetime.strptime(form['birth_date'], '%Y-%m-%d'),
+        'birth_date': datetime.strptime(form['birth_date'], '%Y-%m-%d') if form['birth_date'] else None,
         'position': form['position'],
         'order_no': form['order_no'],
-        'vlk_date': datetime.strptime(form['vlk_date'], '%Y-%m-%d') if form['vlk_date'] else None,
-        'vlk_diagnosis': form['vlk_diagnosis'],
-        'kmo_date': datetime.strptime(form['kmo_date'], '%Y-%m-%d') if form['kmo_date'] else None,
-        'kmo_diagnosis': form['kmo_diagnosis'],
-        'umo_date': datetime.strptime(form['umo_date'], '%Y-%m-%d') if form['umo_date'] else None,
-        'umo_diagnosis': form['umo_diagnosis'],
-        'kmo2_date': datetime.strptime(form['kmo2_date'], '%Y-%m-%d') if form['kmo2_date'] else None,
-        'kmo2_diagnosis': form['kmo2_diagnosis'],
-        'preflight_condition': form['preflight_condition']
+        'preflight_condition': preflight,
+        'note': form['note'] if form['note'] else None
     }
+    examinations = []
+    for exam_type in EXAM_TYPES:
+        date_key = f"{exam_type.lower()}_date"
+        diag_key = f"{exam_type.lower()}_diagnosis"
+        note_key = f"{exam_type.lower()}_note"  # Добавляем ключ для примечания
+        if form.get(date_key):
+            try:
+                exam_date = datetime.strptime(form[date_key], '%Y-%m-%d')
+                examinations.append({
+                    'exam_type': exam_type,
+                    'exam_date': exam_date,
+                    'diagnosis': form.get(diag_key),
+                    'note': form.get(note_key) if form.get(note_key) else None  # Добавляем примечание
+                })
+            except ValueError:
+                print(f"Ошибка формата даты для {exam_type}: {form[date_key]}")
+    return employee_data, examinations

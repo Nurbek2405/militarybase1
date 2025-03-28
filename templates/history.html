@@ -3,33 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>История сотрудника</title>
+    <title>История осмотров</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container mt-4">
-        <h2>История сотрудника: {{ employee.fio }}</h2>
+        <h1>История осмотров: {{ employee.fio }}</h1>
         <a href="{{ url_for('index') }}" class="btn btn-secondary mb-3">Назад</a>
-        <table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Тип осмотра</th>
-            <th>Дата</th>
-            <th>Диагноз</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for exam in examinations %}
-        <tr>
-            <td data-label="Тип осмотра">{{ exam.exam_type }}</td>
-            <td data-label="Дата">{{ exam.exam_date.strftime('%Y-%m-%d') }}</td>
-            <td data-label="Диагноз">{{ exam.diagnosis or '' }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>№</th>
+                    <th>Тип осмотра</th>
+                    <th>Дата осмотра</th>
+                    <th>Срок действия</th>
+                    <th>Диагноз</th>
+                    <th>Примечание</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in examinations_with_expiry %}
+                {% set exam = item.exam %}
+                {% set expiry_date = item.expiry_date %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ exam.exam_type }}</td>
+                    <td>{{ exam.exam_date.strftime('%Y-%m-%d') if exam.exam_date else '' }}</td>
+                    <td>{{ expiry_date.strftime('%Y-%m-%d') if expiry_date else '' }}</td>
+                    <td>{{ exam.diagnosis or '' }}</td>
+                    <td>{{ exam.note or '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Вычисляем ширину каждого столбца на основе самого длинного текста в этом столбце
+        function adjustColumnWidths() {
+            if (window.innerWidth <= 768) { // Только для мобильных
+                console.log("Запуск adjustColumnWidths для мобильных устройств (history.html)");
+
+                const table = document.querySelector('.table');
+                if (!table) {
+                    console.log("Таблица не найдена, повторная попытка через 500мс");
+                    setTimeout(adjustColumnWidths, 500);
+                    return;
+                }
+
+                const rows = table.querySelectorAll('tr');
+                if (!rows.length) {
+                    console.log("Таблица пуста, повторная попытка через 500мс");
+                    setTimeout(adjustColumnWidths, 500);
+                    return;
+                }
+
+                const columnCount = rows[0].children.length; // Количество столбцов
+                const maxWidths = Array(columnCount).fill(0); // Массив для хранения максимальных ширин
+
+                // Создаём временный элемент для измерения ширины текста
+                const tempDiv = document.createElement('div');
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.visibility = 'hidden';
+                tempDiv.style.whiteSpace = 'nowrap';
+                tempDiv.style.fontSize = '11px'; // Соответствует шрифту таблицы
+                tempDiv.style.padding = '4px'; // Учитываем padding
+                document.body.appendChild(tempDiv);
+
+                // Проходим по всем строкам и ячейкам
+                rows.forEach(row => {
+                    Array.from(row.children).forEach((cell, index) => {
+                        tempDiv.textContent = cell.textContent.trim();
+                        const textWidth = tempDiv.offsetWidth;
+                        maxWidths[index] = Math.max(maxWidths[index], textWidth);
+                    });
+                });
+
+                // Удаляем временный элемент
+                document.body.removeChild(tempDiv);
+
+                // Логируем вычисленные ширины
+                console.log("Максимальные ширины столбцов (в пикселях):", maxWidths);
+
+                // Применяем максимальную ширину к каждому столбцу
+                for (let colIndex = 0; colIndex < columnCount; colIndex++) {
+                    const cellsInColumn = table.querySelectorAll(`th:nth-child(${colIndex + 1}), td:nth-child(${colIndex + 1})`);
+                    cellsInColumn.forEach(cell => {
+                        cell.style.width = `${maxWidths[colIndex]}px`;
+                        cell.style.minWidth = `${maxWidths[colIndex]}px`;
+                    });
+                }
+            }
+        }
+
+        // Выполняем при загрузке DOM и при изменении размера окна
+        document.addEventListener('DOMContentLoaded', adjustColumnWidths);
+        window.addEventListener('resize', adjustColumnWidths);
+    </script>
 </body>
 </html>

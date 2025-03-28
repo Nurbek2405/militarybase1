@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash
 from app.models import process_employee_form, recalculate_all_employees
+from datetime import timedelta  # Добавляем импорт timedelta
 
 def add():
     from main import db, Employee, Examination, PREFLIGHT_CONDITIONS
@@ -75,7 +76,19 @@ def history(id):
 
     employee = Employee.query.get_or_404(id)
     examinations = Examination.query.filter_by(employee_id=id).order_by(Examination.exam_date.asc()).all()
-    return render_template('history.html', employee=employee, examinations=examinations)
+
+    # Создаём список осмотров с рассчитанным сроком действия
+    examinations_with_expiry = []
+    for exam in examinations:
+        # Рассчитываем срок действия в зависимости от типа осмотра
+        days_to_add = 365 if exam.exam_type == 'ВЛК' else 90 if exam.exam_type == 'КМО' else 180 if exam.exam_type == 'УМО' else 270 if exam.exam_type == 'КМО2' else 0
+        expiry_date = exam.exam_date + timedelta(days=days_to_add) if exam.exam_date else None
+        examinations_with_expiry.append({
+            'exam': exam,
+            'expiry_date': expiry_date
+        })
+
+    return render_template('history.html', employee=employee, examinations_with_expiry=examinations_with_expiry)
 
 def delete(id):
     from main import db, Employee
