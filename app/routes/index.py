@@ -1,10 +1,11 @@
 from flask import render_template, request
+from flask_login import login_required
 from app.models import calculate_expiry
 from datetime import datetime
+from models import db, Employee, AuditLog, PREFLIGHT_CONDITIONS
 
+@login_required
 def index():
-    from main import db, Employee, PREFLIGHT_CONDITIONS  # Импорт внутри функции
-
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     sort = request.args.get('sort', 'deadline_asc')
@@ -29,11 +30,10 @@ def index():
 
     employees_with_expiry = []
     for emp in employees:
-        db.session.refresh(emp)  # Синхронизируем объект с базой
-        expiry_data = calculate_expiry(emp)  # Пересчитываем для каждого сотрудника
+        db.session.refresh(emp)
+        expiry_data = calculate_expiry(emp)
         employees_with_expiry.append(expiry_data)
 
-    # Сохраняем изменения в базе (например, preflight_condition)
     for emp in employees_with_expiry:
         db.session.add(emp['employee'])
     db.session.commit()
@@ -41,7 +41,7 @@ def index():
     if sort == 'deadline_asc':
         employees_with_expiry.sort(
             key=lambda x: x['min_days_left'] if x['min_days_left'] is not None else float('inf'),
-            reverse=False)  # Сортировка по возрастанию, без reverse=True
+            reverse=False)
 
     return render_template(
         'index.html',
@@ -52,3 +52,10 @@ def index():
         datetime=datetime,
         preflight_conditions=PREFLIGHT_CONDITIONS
     )
+
+@login_required
+def logs():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    logs = AuditLog.query.order_by(AuditLog.timestamp.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    return render_template('logs.html', logs=logs)
